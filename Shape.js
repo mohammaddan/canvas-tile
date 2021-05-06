@@ -1,7 +1,16 @@
 export default class Shape{
 
+    set_padding(padding){
+        this.padding=padding;
+    }
+
     draw_rect(shape){
-        this.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height);
+        this.ctx.strokeRect(
+            shape.x + shape.padding + this.padding,
+            shape.y + shape.padding + this.padding,
+            shape.width - 2 * (shape.padding + this.padding),
+            shape.height - 2 * (shape.padding + this.padding)
+            );
     }
 
     draw_lozenge(shape){

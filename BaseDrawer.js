@@ -12,12 +12,10 @@ export default class BaseDrawer extends Shape{
         this.x=0;this.y=0;
     }
 
-    isInTheShape(x,y){
+    isInTheShape(x1,y,x2){
         return this.shapes.some(s=> 
-            s.x<=x &&
-            s.x+s.width>x &&
-            s.y<=y &&
-            s.y+s.height>y)
+            s.x<=x2 && x1<s.x+s.width &&
+            s.y<=y && s.y+s.height>y)
     }
 
     removeAnyPointsOnShape(shape){
@@ -30,12 +28,12 @@ export default class BaseDrawer extends Shape{
         })
     }
 
-    addShape(shape, w,h) {
-        let x=[...this.rows[0].points].sort(function(a, b){return a-b})[0];
+    addShape(shape, w,h,padding=0) {
+        let x=[...this.rows[0].points].sort((a, b)=>{return a-b})[0];
         let y=this.rows[0].height;
         // console.log(this.rows);
         this.rows[0].points.forEach(q=> {isNaN(q)?this.rows[0].points.delete(q):''});
-        while(x+w>this.width || this.isInTheShape(x+w,y))
+        while(x+w>this.width || this.isInTheShape(x,y,x+w))
         {
             this.rows[0].points.delete(x);
             this.rows[0].points.forEach(q=> {isNaN(q)?this.rows[0].points.delete(q):''});
@@ -48,20 +46,21 @@ export default class BaseDrawer extends Shape{
         console.log('x = ',x);
         this.rows[0].points.delete(x);
         this.rows[0].points.add(x+w);
-        // if(x+w<this.width && !this.isInTheShape(x+w,y)) 
         let nextRow= this.rows.find(r=>r.height==y+h)
         if(nextRow==null) {
             this.rows.push({height:y+h,points:new Set([0])});
             nextRow=this.rows[this.rows.length-1];
+            this.rows = this.rows.sort((a,b)=> a.height-b.height)
         }
-        if(!this.isInTheShape(x,y+h)) nextRow.points.add(x);
-        if(x+w<this.width && !this.isInTheShape(x+w,y+h)) nextRow.points.add(x+w);
+        nextRow.points.add(x);
+        if(x+w<this.width) nextRow.points.add(x+w);
         this.shapes.push({
             shape:shape,
             x:x,
             y:y,
             width:w,
             height:h,
+            padding:padding
         })
         if(this.rows[0].points.size===0) this.rows=this.rows.splice(1);
         this.removeAnyPointsOnShape(this.shapes[this.shapes.length-1]);
@@ -71,20 +70,24 @@ export default class BaseDrawer extends Shape{
     }
 
     drawLastShapeWithAllPoint(){
-        let shape=this.shapes[this.shapes.length-1];
-        this['draw_'+shape.shape](shape);
-        this.ctx.clearRect(450,0,550,550)
+        // let shape=this.shapes[this.shapes.length-1];
+        // this['draw_'+shape.shape](shape);
+        this.ctx.clearRect(0,0,this.width,this.height);
+        this.drawAll();
+
         this.rows.forEach(row=>{
             for(let x of row.points){
                 this.ctx.beginPath();
-                this.ctx.arc(x+500,row.height,3,0,2 * Math.PI);
+                this.ctx.strokeStyle='#ff0000';
+                this.ctx.arc(x,row.height,3,0,2 * Math.PI);
                 this.ctx.stroke();
             }
         })
+        this.ctx.strokeStyle='#000000';
     }
 
     drawAll(){
-        console.log(this.shapes);
+        // console.log(this.shapes);
         this.shapes.forEach(shape=>{
             this['draw_'+shape.shape](shape);
         })
