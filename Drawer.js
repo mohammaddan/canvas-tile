@@ -17,6 +17,5 @@ export default class Drawer extends BaseDrawer{
         for(let i=0;i<cols*rows;i++){
             this.addShape(shapeName,width,height,padding);
         }
-
     }
 }
